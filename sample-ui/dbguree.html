@@ -1,0 +1,3301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB Studio</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-0: #0d0f14;
+            --bg-1: #13161e;
+            --bg-2: #1a1e28;
+            --bg-3: #222838;
+            --bg-4: #2a3042;
+            --border: #2e3545;
+            --border-bright: #3d4860;
+            --text-0: #e8ecf4;
+            --text-1: #a8b3cc;
+            --text-2: #6b7899;
+            --accent: #4f9cf9;
+            --accent-dim: #2563c4;
+            --accent-glow: rgba(79, 156, 249, 0.15);
+            --green: #3dd68c;
+            --red: #f87171;
+            --yellow: #fbbf24;
+            --purple: #c084fc;
+            --orange: #fb923c;
+            --cyan: #22d3ee;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'IBM Plex Sans', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg-0);
+            color: var(--text-0);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        /* ── TITLE BAR ── */
+        .titlebar {
+            height: 40px;
+            background: var(--bg-1);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--mono);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .titlebar-spacer {
+            flex: 1;
+        }
+
+        .titlebar-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .conn-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: var(--bg-3);
+            border: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--text-1);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .conn-badge:hover {
+            border-color: var(--accent);
+            color: var(--text-0);
+        }
+
+        .conn-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+        }
+
+        .conn-badge .dot.off {
+            background: var(--text-2);
+            box-shadow: none;
+        }
+
+        .btn-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            color: var(--text-1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.15s;
+        }
+
+        .btn-icon:hover {
+            background: var(--bg-3);
+            color: var(--text-0);
+        }
+
+        /* ── MAIN LAYOUT ── */
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ── SIDEBAR HEADER ── */
+        .sidebar-header {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px 0 14px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            gap: 6px;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-2);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            flex: 1;
+        }
+
+        /* ── SECTION BLOCKS ── */
+        .sec-block {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sec-head {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 10px 7px 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.1s;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: var(--bg-1);
+        }
+
+        .sec-head:hover {
+            background: var(--bg-2);
+        }
+
+        .sec-toggle {
+            font-size: 8px;
+            color: var(--text-2);
+            width: 10px;
+            text-align: center;
+            transition: transform 0.15s;
+            flex-shrink: 0;
+        }
+
+        .sec-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .sec-icon {
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .sec-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-1);
+            flex: 1;
+            letter-spacing: 0.2px;
+        }
+
+        .sec-badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 8px;
+            background: var(--bg-4);
+            color: var(--text-2);
+            font-family: var(--mono);
+            display: none;
+        }
+
+        .sec-badge.visible {
+            display: inline-block;
+        }
+
+        .sec-conn-chip {
+            font-size: 9px;
+            padding: 1px 6px;
+            border-radius: 8px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            font-family: var(--mono);
+            border: 1px solid rgba(79, 156, 249, 0.25);
+            max-width: 70px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sec-action {
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .sec-head:hover .sec-action {
+            opacity: 1;
+        }
+
+        .sec-body {
+            overflow: hidden;
+            transition: max-height 0.2s ease;
+        }
+
+        .sec-body.collapsed {
+            max-height: 0 !important;
+            overflow: hidden;
+        }
+
+        /* Conn section within stacked layout */
+        .conn-section {
+            padding: 6px;
+        }
+
+        /* ── SIDEBAR CONTAINER ── */
+        .sidebar {
+            width: 260px;
+            min-width: 200px;
+            max-width: 420px;
+            background: var(--bg-1);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+
+        .conn-add-btn {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 5px;
+            border: 1px dashed var(--border-bright);
+            background: transparent;
+            color: var(--text-2);
+            font-size: 11px;
+            font-family: var(--sans);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+            margin-bottom: 8px;
+        }
+
+        .conn-add-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .conn-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-bottom: 2px;
+            position: relative;
+        }
+
+        .conn-item:hover {
+            background: var(--bg-3);
+        }
+
+        .conn-item.active {
+            background: var(--bg-4);
+        }
+
+        .conn-item-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .conn-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .conn-item-name {
+            font-size: 12px;
+            color: var(--text-0);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conn-item-host {
+            font-size: 10px;
+            color: var(--text-2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conn-item-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ── CONN EXPAND TOGGLE ── */
+        .conn-expand-toggle {
+            width: 14px;
+            font-size: 8px;
+            color: var(--text-2);
+            flex-shrink: 0;
+            text-align: center;
+            transition: transform 0.15s;
+            user-select: none;
+        }
+
+        /* ── PER-CONNECTION SUB-SECTIONS ── */
+        .conn-subsections {
+            display: none;
+            border-top: 1px solid var(--border);
+            background: var(--bg-0);
+        }
+
+        .conn-subsections.open {
+            display: block;
+        }
+
+        .conn-sub-head {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px 5px 22px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.1s;
+            border-bottom: 1px solid transparent;
+        }
+
+        .conn-sub-head:hover {
+            background: var(--bg-2);
+        }
+
+        .conn-sub-toggle {
+            font-size: 7px;
+            color: var(--text-2);
+            width: 10px;
+            text-align: center;
+            transition: transform 0.15s;
+            flex-shrink: 0;
+        }
+
+        .conn-sub-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .conn-sub-icon { font-size: 11px; flex-shrink: 0; }
+
+        .conn-sub-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-2);
+            flex: 1;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .conn-sub-badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 8px;
+            background: var(--bg-4);
+            color: var(--text-2);
+            font-family: var(--mono);
+            display: none;
+        }
+
+        .conn-sub-badge.visible { display: inline-block; }
+
+        .conn-sub-action {
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.15s;
+            border-radius: 3px;
+            border: none;
+            background: transparent;
+            color: var(--text-2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .conn-sub-head:hover .conn-sub-action { opacity: 1; }
+        .conn-sub-action:hover { background: var(--bg-4); color: var(--text-0); }
+
+        .conn-sub-body {
+            overflow: hidden;
+            max-height: 300px;
+            transition: max-height 0.2s ease;
+        }
+
+        .conn-sub-body.collapsed {
+            max-height: 0 !important;
+        }
+
+        /* KB mini search inside sub-section */
+        .kb-mini-search {
+            width: calc(100% - 12px);
+            margin: 5px 6px 4px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--bg-3);
+            color: var(--text-0);
+            font-size: 11px;
+            font-family: var(--sans);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .kb-mini-search:focus { border-color: var(--accent); }
+
+        /* KB mini upload zone */
+        .kb-mini-drop {
+            margin: 0 6px 5px;
+            padding: 7px 8px;
+            border-radius: 5px;
+            border: 1px dashed var(--border-bright);
+            background: transparent;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 10px;
+            color: var(--text-2);
+        }
+
+        .kb-mini-drop:hover, .kb-mini-drop.drag-over {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        /* History items */
+        .hist-item {
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 2px 4px;
+            transition: background 0.1s;
+            border-left: 2px solid transparent;
+        }
+
+        .hist-item:hover {
+            background: var(--bg-3);
+            border-left-color: var(--accent);
+        }
+
+        .hist-meta {
+            font-size: 9px;
+            color: var(--text-2);
+            font-family: var(--mono);
+            margin-bottom: 2px;
+        }
+
+        .hist-query {
+            font-size: 11px;
+            color: var(--text-1);
+            font-family: var(--mono);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+
+        .tree-node {
+            user-select: none;
+        }
+
+        .tree-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            transition: background 0.1s;
+            border-radius: 3px;
+            margin: 1px 4px;
+        }
+
+        .tree-row:hover {
+            background: var(--bg-3);
+        }
+
+        .tree-row.selected {
+            background: var(--bg-4);
+            color: var(--accent);
+        }
+
+        .tree-toggle {
+            width: 14px;
+            font-size: 9px;
+            color: var(--text-2);
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .tree-icon {
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .tree-label {
+            font-size: 12px;
+            color: var(--text-1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tree-row.selected .tree-label {
+            color: var(--text-0);
+        }
+
+        .tree-children {
+            padding-left: 14px;
+        }
+
+        .tree-badge {
+            margin-left: auto;
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: var(--bg-4);
+            color: var(--text-2);
+            font-family: var(--mono);
+        }
+
+        /* Resize handle */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            cursor: col-resize;
+            z-index: 10;
+        }
+
+        .resize-handle:hover {
+            background: var(--accent);
+            opacity: 0.4;
+        }
+
+        /* ── EDITOR AREA ── */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-0);
+        }
+
+        /* Query Tabs */
+        .query-tabs {
+            height: 36px;
+            display: flex;
+            align-items: stretch;
+            background: var(--bg-1);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .query-tabs::-webkit-scrollbar {
+            height: 0;
+        }
+
+        .query-tab {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 14px;
+            border-right: 1px solid var(--border);
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text-2);
+            font-size: 12px;
+            transition: all 0.15s;
+            position: relative;
+            flex-shrink: 0;
+            min-width: 100px;
+        }
+
+        .query-tab:hover {
+            background: var(--bg-2);
+            color: var(--text-1);
+        }
+
+        .query-tab.active {
+            background: var(--bg-0);
+            color: var(--text-0);
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: -1px;
+        }
+
+        .query-tab-close {
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            opacity: 0;
+            transition: opacity 0.15s;
+            background: transparent;
+            border: none;
+            color: var(--text-2);
+            cursor: pointer;
+            margin-left: 2px;
+        }
+
+        .query-tab:hover .query-tab-close {
+            opacity: 1;
+        }
+
+        .query-tab-close:hover {
+            background: var(--bg-4);
+            color: var(--red);
+        }
+
+        .tab-add {
+            width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-2);
+            font-size: 16px;
+            flex-shrink: 0;
+            transition: color 0.15s;
+        }
+
+        .tab-add:hover {
+            color: var(--accent);
+        }
+
+        /* Toolbar */
+        .toolbar {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-1);
+            flex-shrink: 0;
+        }
+
+        .toolbar-sep {
+            width: 1px;
+            height: 18px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-family: var(--sans);
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+
+        .btn-run {
+            background: var(--accent);
+            color: #fff;
+            padding: 5px 14px;
+        }
+
+        .btn-run:hover {
+            background: #3b82f6;
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-3);
+            color: var(--text-1);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-bright);
+            color: var(--text-0);
+            background: var(--bg-4);
+        }
+
+        .toolbar-label {
+            font-size: 11px;
+            color: var(--text-2);
+            margin-left: 4px;
+        }
+
+        .limit-select {
+            background: var(--bg-3);
+            border: 1px solid var(--border);
+            color: var(--text-1);
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: var(--sans);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .limit-select:focus {
+            border-color: var(--accent);
+        }
+
+        /* Editor Split */
+        .editor-split {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .query-editor-wrap {
+            height: 220px;
+            min-height: 80px;
+            position: relative;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .query-editor {
+            width: 100%;
+            height: 100%;
+            padding: 14px 16px;
+            background: var(--bg-0);
+            color: var(--text-0);
+            font-family: var(--mono);
+            font-size: 13px;
+            line-height: 1.6;
+            border: none;
+            outline: none;
+            resize: none;
+            caret-color: var(--accent);
+        }
+
+        .query-editor::selection {
+            background: rgba(79, 156, 249, 0.25);
+        }
+
+        .query-editor::placeholder {
+            color: var(--text-2);
+        }
+
+        .line-numbers {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background: var(--bg-1);
+            border-right: 1px solid var(--border);
+            padding-top: 14px;
+            text-align: right;
+            padding-right: 8px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-2);
+            line-height: 1.6;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .query-editor-wrap .query-editor {
+            padding-left: 52px;
+        }
+
+        /* Drag resize for editor */
+        .drag-divider {
+            height: 4px;
+            cursor: row-resize;
+            flex-shrink: 0;
+            background: var(--border);
+            transition: background 0.15s;
+            position: relative;
+            z-index: 5;
+        }
+
+        .drag-divider:hover,
+        .drag-divider.dragging {
+            background: var(--accent);
+        }
+
+        /* Results */
+        .results-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 60px;
+        }
+
+        .results-tabs {
+            height: 30px;
+            display: flex;
+            align-items: stretch;
+            background: var(--bg-1);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .results-tab {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 12px;
+            font-size: 11px;
+            cursor: pointer;
+            color: var(--text-2);
+            transition: all 0.15s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .results-tab.active {
+            color: var(--text-0);
+            border-bottom-color: var(--accent);
+        }
+
+        .results-tab:hover:not(.active) {
+            color: var(--text-1);
+            background: var(--bg-2);
+        }
+
+        .results-tab .badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 10px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .results-content {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+        }
+
+        .results-content::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .results-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .results-content::-webkit-scrollbar-corner {
+            background: var(--bg-1);
+        }
+
+        /* Table */
+        .result-table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+
+        .result-table th {
+            position: sticky;
+            top: 0;
+            background: var(--bg-2);
+            z-index: 2;
+            padding: 8px 14px;
+            text-align: left;
+            font-size: 11px;
+            color: var(--text-2);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .result-table th:hover {
+            color: var(--text-0);
+            background: var(--bg-3);
+        }
+
+        .result-table th .sort-icon {
+            margin-left: 4px;
+            opacity: 0.4;
+            font-size: 9px;
+        }
+
+        .result-table th.sort-asc .sort-icon,
+        .result-table th.sort-desc .sort-icon {
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        .result-table td {
+            padding: 6px 14px;
+            border-bottom: 1px solid rgba(46, 53, 69, 0.5);
+            white-space: nowrap;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-1);
+        }
+
+        .result-table tr:hover td {
+            background: var(--bg-2);
+            color: var(--text-0);
+        }
+
+        .result-table tr:nth-child(even) td {
+            background: rgba(26, 30, 40, 0.3);
+        }
+
+        .result-table tr:nth-child(even):hover td {
+            background: var(--bg-2);
+        }
+
+        .null-val {
+            color: var(--text-2);
+            font-style: italic;
+        }
+
+        .num-val {
+            color: var(--cyan);
+        }
+
+        .bool-val {
+            color: var(--purple);
+        }
+
+        .str-val {
+            color: var(--text-1);
+        }
+
+        .date-val {
+            color: var(--yellow);
+        }
+
+        /* Status bar */
+        .statusbar {
+            height: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px;
+            background: var(--accent-dim);
+            border-top: 1px solid var(--accent);
+            font-size: 11px;
+            font-family: var(--mono);
+            flex-shrink: 0;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .status-item.ok {
+            color: #86efac;
+        }
+
+        .status-item.err {
+            color: var(--red);
+        }
+
+        .status-spacer {
+            flex: 1;
+        }
+
+        .status-pos {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 10px;
+            color: var(--text-2);
+        }
+
+        .empty-icon {
+            font-size: 36px;
+            opacity: 0.3;
+        }
+
+        .empty-msg {
+            font-size: 13px;
+        }
+
+        .empty-hint {
+            font-size: 11px;
+            color: var(--text-2);
+            opacity: 0.6;
+        }
+
+        /* Loading */
+        .loading-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: loadingSlide 1.2s ease-in-out infinite;
+            display: none;
+        }
+
+        .loading-bar.active {
+            display: block;
+        }
+
+        @keyframes loadingSlide {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: var(--bg-2);
+            border: 1px solid var(--border-bright);
+            border-radius: 10px;
+            width: 520px;
+            max-width: 95vw;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+            transform: translateY(10px);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-0);
+        }
+
+        .modal-close {
+            margin-left: auto;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-2);
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            background: var(--bg-3);
+            color: var(--text-0);
+            font-family: var(--sans);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            border-color: var(--accent);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .db-type-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .db-type-btn {
+            padding: 10px 6px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-3);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .db-type-btn:hover {
+            border-color: var(--border-bright);
+        }
+
+        .db-type-btn.selected {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .db-type-btn .db-icon {
+            font-size: 20px;
+        }
+
+        .db-type-btn .db-name {
+            font-size: 10px;
+            color: var(--text-1);
+        }
+
+        .db-type-btn.selected .db-name {
+            color: var(--accent);
+        }
+
+        /* Notification */
+        .notifications {
+            position: fixed;
+            bottom: 36px;
+            right: 16px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .notif {
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 220px;
+            animation: notifIn 0.25s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            border: 1px solid transparent;
+        }
+
+        @keyframes notifIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+        }
+
+        .notif-success {
+            background: #052e16;
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .notif-error {
+            background: #2d0a0a;
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .notif-info {
+            background: #0a1a2e;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Context menu */
+        .ctx-menu {
+            position: fixed;
+            background: var(--bg-2);
+            border: 1px solid var(--border-bright);
+            border-radius: 6px;
+            padding: 4px;
+            z-index: 300;
+            min-width: 160px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .ctx-menu.open {
+            display: block;
+        }
+
+        .ctx-item {
+            padding: 6px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--text-1);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            transition: all 0.1s;
+        }
+
+        .ctx-item:hover {
+            background: var(--bg-3);
+            color: var(--text-0);
+        }
+
+        .ctx-item.danger:hover {
+            background: rgba(248, 113, 113, 0.1);
+            color: var(--red);
+        }
+
+        .ctx-sep {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+
+        /* ── KNOWLEDGE BASE ── */
+        .kb-sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .kb-search-wrap {
+            padding: 8px;
+        }
+
+        .kb-search {
+            width: 100%;
+            padding: 6px 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            background: var(--bg-3);
+            color: var(--text-0);
+            font-size: 12px;
+            font-family: var(--sans);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .kb-search:focus {
+            border-color: var(--accent);
+        }
+
+        .kb-upload-zone {
+            margin: 0 8px 8px;
+            padding: 14px 10px;
+            border-radius: 6px;
+            border: 1px dashed var(--border-bright);
+            background: var(--bg-0);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .kb-upload-zone:hover,
+        .kb-upload-zone.drag-over {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .kb-upload-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .kb-upload-text {
+            font-size: 11px;
+            color: var(--text-1);
+            font-weight: 500;
+        }
+
+        .kb-upload-hint {
+            font-size: 10px;
+            color: var(--text-2);
+            margin-top: 2px;
+        }
+
+        .kb-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 10px 4px 12px;
+            margin-bottom: 2px;
+        }
+
+        .kb-section-header span {
+            font-size: 10px;
+            color: var(--text-2);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .kb-header-actions {
+            display: flex;
+            gap: 2px;
+        }
+
+        .kb-icon-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 3px;
+            border: none;
+            background: transparent;
+            color: var(--text-2);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .kb-icon-btn:hover {
+            background: var(--bg-3);
+            color: var(--text-0);
+        }
+
+        /* Folder */
+        .kb-folder {
+            margin-bottom: 2px;
+        }
+
+        .kb-folder-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.1s;
+            margin: 0 4px;
+        }
+
+        .kb-folder-row:hover {
+            background: var(--bg-3);
+        }
+
+        .kb-folder-toggle {
+            font-size: 9px;
+            color: var(--text-2);
+            width: 12px;
+            text-align: center;
+        }
+
+        .kb-folder-icon {
+            font-size: 13px;
+        }
+
+        .kb-folder-name {
+            font-size: 12px;
+            color: var(--text-1);
+            flex: 1;
+        }
+
+        .kb-folder-count {
+            font-size: 9px;
+            color: var(--text-2);
+            font-family: var(--mono);
+        }
+
+        .kb-folder-children {
+            padding-left: 16px;
+        }
+
+        /* Doc item */
+        .kb-doc-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin: 1px 4px;
+            position: relative;
+        }
+
+        .kb-doc-item:hover {
+            background: var(--bg-3);
+        }
+
+        .kb-doc-item:hover .kb-doc-actions {
+            opacity: 1;
+        }
+
+        .kb-doc-item.active {
+            background: var(--bg-4);
+            border-left: 2px solid var(--accent);
+            padding-left: 8px;
+        }
+
+        .kb-doc-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .kb-doc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .kb-doc-name {
+            font-size: 12px;
+            color: var(--text-0);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .kb-doc-meta {
+            font-size: 10px;
+            color: var(--text-2);
+            margin-top: 1px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .kb-doc-tags {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            margin-top: 3px;
+        }
+
+        .kb-tag {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: var(--bg-4);
+            color: var(--text-2);
+            border: 1px solid var(--border);
+            font-family: var(--mono);
+        }
+
+        .kb-doc-actions {
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.15s;
+            flex-shrink: 0;
+        }
+
+        /* Viewer modal */
+        .kb-viewer-modal {
+            width: 800px;
+            max-width: 95vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kb-viewer-toolbar {
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            background: var(--bg-2);
+        }
+
+        .kb-tag-list {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .kb-tag-pill {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            background: rgba(79, 156, 249, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(79, 156, 249, 0.3);
+        }
+
+        .kb-tag-pill-del {
+            cursor: pointer;
+            font-size: 10px;
+            opacity: 0.6;
+        }
+
+        .kb-tag-pill-del:hover {
+            opacity: 1;
+        }
+
+        .kb-tag-input {
+            padding: 3px 8px;
+            border-radius: 10px;
+            border: 1px dashed var(--border-bright);
+            background: transparent;
+            color: var(--text-1);
+            font-size: 11px;
+            font-family: var(--sans);
+            outline: none;
+            width: 120px;
+            transition: border-color 0.15s;
+        }
+
+        .kb-tag-input:focus {
+            border-color: var(--accent);
+        }
+
+        .kb-viewer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            font-family: var(--mono);
+            font-size: 12.5px;
+            line-height: 1.75;
+            color: var(--text-1);
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: var(--bg-1);
+        }
+
+        .kb-viewer-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .kb-viewer-body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .kb-viewer-body.markdown h1,
+        .kb-viewer-body.markdown h2,
+        .kb-viewer-body.markdown h3 {
+            color: var(--text-0);
+            font-family: var(--sans);
+            margin: 16px 0 8px;
+        }
+
+        .kb-viewer-body.markdown h1 {
+            font-size: 18px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+        }
+
+        .kb-viewer-body.markdown h2 {
+            font-size: 15px;
+        }
+
+        .kb-viewer-body.markdown code {
+            background: var(--bg-3);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .kb-viewer-body.markdown pre {
+            background: var(--bg-0);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .kb-viewer-body.markdown strong {
+            color: var(--text-0);
+        }
+
+        .kb-viewer-body.markdown a {
+            color: var(--accent);
+        }
+
+        .kb-viewer-body.markdown blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 12px;
+            color: var(--text-2);
+            margin: 8px 0;
+        }
+
+        .kb-viewer-body.markdown table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .kb-viewer-body.markdown th {
+            background: var(--bg-3);
+            padding: 6px 10px;
+            text-align: left;
+            font-size: 11px;
+            border: 1px solid var(--border);
+        }
+
+        .kb-viewer-body.markdown td {
+            padding: 5px 10px;
+            border: 1px solid var(--border);
+        }
+
+        .kb-empty {
+            text-align: center;
+            padding: 30px 16px;
+            color: var(--text-2);
+            font-size: 12px;
+        }
+
+        .kb-empty-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+            opacity: 0.4;
+        }
+
+        /* Filter tags row */
+        .kb-filter-row {
+            padding: 4px 8px 6px;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .kb-filter-tag {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            cursor: pointer;
+            background: var(--bg-3);
+            color: var(--text-2);
+            border: 1px solid var(--border);
+            transition: all 0.15s;
+        }
+
+        .kb-filter-tag:hover,
+        .kb-filter-tag.active {
+            background: var(--accent-glow);
+            color: var(--accent);
+            border-color: rgba(79, 156, 249, 0.4);
+        }
+
+
+
+        /* JSON view */
+        .json-view {
+            padding: 14px 16px;
+            font-family: var(--mono);
+            font-size: 12px;
+            line-height: 1.7;
+            color: var(--text-1);
+            white-space: pre-wrap;
+        }
+
+        .json-key {
+            color: var(--accent);
+        }
+
+        .json-str {
+            color: var(--green);
+        }
+
+        .json-num {
+            color: var(--cyan);
+        }
+
+        .json-bool {
+            color: var(--purple);
+        }
+
+        .json-null {
+            color: var(--text-2);
+            font-style: italic;
+        }
+
+        /* Messages panel */
+        .messages-panel {
+            padding: 14px 16px;
+            font-family: var(--mono);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .msg-line {
+            display: flex;
+            gap: 10px;
+        }
+
+        .msg-time {
+            color: var(--text-2);
+            flex-shrink: 0;
+        }
+
+        .msg-text.success {
+            color: var(--green);
+        }
+
+        .msg-text.error {
+            color: var(--red);
+        }
+
+        .msg-text.info {
+            color: var(--text-1);
+        }
+
+        .result-footer {
+            height: 26px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px;
+            background: var(--bg-1);
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            font-size: 11px;
+            font-family: var(--mono);
+        }
+
+        .rf-item {
+            color: var(--text-2);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .rf-item span {
+            color: var(--text-1);
+        }
+
+        .rf-spacer {
+            flex: 1;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .page-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: var(--bg-3);
+            color: var(--text-1);
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: var(--text-2);
+            font-size: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TITLE BAR -->
+    <div class="titlebar">
+        <div class="logo">
+            <div class="logo-icon">⚡</div>
+            DB Studio
+        </div>
+        <div class="titlebar-spacer"></div>
+        <div class="titlebar-actions">
+            <div class="conn-badge" id="activeBadge" onclick="openModal()">
+                <div class="dot off" id="connDot"></div>
+                <span id="connName">No Connection</span>
+            </div>
+            <button class="btn-icon" title="New Connection" onclick="openModal()">＋</button>
+            <button class="btn-icon" title="Settings">⚙</button>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <!-- SIDEBAR HEADER -->
+            <div class="sidebar-header">
+                <span class="sidebar-title">Explorer</span>
+                <button class="kb-icon-btn" title="New Connection" onclick="openModal()"
+                    style="font-size:15px;color:var(--accent)">＋</button>
+            </div>
+
+            <div class="sidebar-content">
+
+                <!-- ══ CONNECTIONS SECTION ══ -->
+                <div class="sec-block" id="sec-connections">
+                    <div class="sec-head" onclick="toggleSection('connections')">
+                        <span class="sec-toggle" id="tog-connections">▼</span>
+                        <span class="sec-icon">🔌</span>
+                        <span class="sec-label">Connections</span>
+                        <span class="sec-badge" id="badge-connections">0</span>
+                    </div>
+                    <div class="sec-body" id="body-connections">
+                        <div style="padding:6px 6px 2px">
+                            <button class="conn-add-btn" onclick="openModal()">＋ &nbsp; New Connection</button>
+                        </div>
+                        <!-- Each connection renders its own row + nested sub-sections here -->
+                        <div id="connList"></div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="resize-handle" id="sidebarResize"></div>
+        </div>
+
+        <!-- EDITOR -->
+        <div class="editor-area">
+            <!-- Query Tabs -->
+            <div class="query-tabs" id="queryTabs">
+                <div class="tab-add" onclick="addQueryTab()" title="New tab">＋</div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <button class="btn btn-run" onclick="runQuery()" title="Ctrl+Enter">▶ Run</button>
+                <button class="btn btn-secondary" onclick="runQuery(true)" title="Run selected">▶ Selection</button>
+                <div class="toolbar-sep"></div>
+                <button class="btn btn-secondary" onclick="formatQuery()">⌥ Format</button>
+                <button class="btn btn-secondary" onclick="clearEditor()">✕ Clear</button>
+                <div class="toolbar-sep"></div>
+                <span class="toolbar-label">Limit:</span>
+                <select class="limit-select" id="limitSelect">
+                    <option>100</option>
+                    <option>500</option>
+                    <option>1000</option>
+                    <option>5000</option>
+                    <option>All</option>
+                </select>
+                <div class="toolbar-sep"></div>
+                <button class="btn btn-secondary" onclick="exportCSV()">⬇ Export CSV</button>
+            </div>
+
+            <!-- Split: Editor + Results -->
+            <div class="editor-split" id="editorSplit">
+                <div class="query-editor-wrap" id="editorWrap">
+                    <div class="line-numbers" id="lineNumbers">1</div>
+                    <textarea class="query-editor" id="queryEditor" placeholder="-- Write your SQL or query here...
+-- Press Ctrl+Enter to run" spellcheck="false"></textarea>
+                </div>
+                <div class="drag-divider" id="dragDivider"></div>
+                <div class="results-panel" id="resultsPanel">
+                    <div class="results-tabs">
+                        <div class="results-tab active" onclick="switchResultTab(0,this)">📋 Result Set</div>
+                        <div class="results-tab" onclick="switchResultTab(1,this)">💬 Messages</div>
+                        <div class="results-tab" onclick="switchResultTab(2,this)">{ } JSON</div>
+                    </div>
+                    <div class="results-content" id="resultContent">
+                        <div class="loading-bar" id="loadingBar"></div>
+                        <div class="empty-state" id="emptyState">
+                            <div class="empty-icon">⚡</div>
+                            <div class="empty-msg">Ready to query</div>
+                            <div class="empty-hint">Connect to a database and run a query</div>
+                        </div>
+                    </div>
+                    <div class="result-footer" id="resultFooter" style="display:none">
+                        <div class="rf-item">Rows: <span id="rowCount">0</span></div>
+                        <div class="rf-item">Cols: <span id="colCount">0</span></div>
+                        <div class="rf-item">Time: <span id="execTime">—</span></div>
+                        <div class="rf-spacer"></div>
+                        <div class="pagination">
+                            <button class="page-btn" id="prevPage" onclick="changePage(-1)">‹</button>
+                            <span class="page-info" id="pageInfo">1 / 1</span>
+                            <button class="page-btn" id="nextPage" onclick="changePage(1)">›</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="statusbar">
+        <div class="status-item" id="statusConn">○ Not connected</div>
+        <div class="toolbar-sep" style="background:rgba(255,255,255,0.15)"></div>
+        <div class="status-item" id="statusDB">—</div>
+        <div class="status-spacer"></div>
+        <div class="status-pos" id="statusPos">Ln 1, Col 1</div>
+    </div>
+
+    <!-- MODAL: New Connection -->
+    <div class="modal-overlay" id="modalOverlay" onclick="e=>e.target===this&&closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title">New Database Connection</span>
+                <button class="btn-icon modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Database Type</label>
+                    <div class="db-type-grid" id="dbTypeGrid"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Connection Name</label>
+                        <input class="form-input" id="connNameInput" placeholder="My Database" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Host</label>
+                        <input class="form-input" id="connHost" placeholder="localhost" />
+                    </div>
+                    <div class="form-group" style="max-width:100px">
+                        <label class="form-label">Port</label>
+                        <input class="form-input" id="connPort" placeholder="5432" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input class="form-input" id="connUser" placeholder="admin" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input class="form-input" id="connPass" type="password" placeholder="••••••••" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Database / Collection</label>
+                    <input class="form-input" id="connDB" placeholder="mydb" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Connection String (optional)</label>
+                    <input class="form-input" id="connStr" placeholder="postgres://user:pass@host/db" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="testConnection()">Test Connection</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-run" onclick="saveConnection()">Connect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="notifications" id="notifications"></div>
+
+    <!-- Knowledge Base Doc Viewer Modal -->
+    <div class="modal-overlay" id="kbViewerOverlay" onclick="e=>e.target===this&&closeKBViewer()">
+        <div class="modal kb-viewer-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="kb-viewer-icon" id="kbViewerIcon">📄</span>
+                <div>
+                    <div class="modal-title" id="kbViewerTitle">Document</div>
+                    <div style="font-size:10px;color:var(--text-2);margin-top:2px" id="kbViewerMeta"></div>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+                    <button class="btn btn-secondary" style="font-size:11px" onclick="kbDownloadDoc()">⬇
+                        Download</button>
+                    <button class="btn btn-secondary" style="font-size:11px" onclick="kbInsertToEditor()">⎘ Insert to
+                        Editor</button>
+                    <button class="btn-icon" onclick="closeKBViewer()">✕</button>
+                </div>
+            </div>
+            <div class="kb-viewer-toolbar">
+                <div class="kb-tag-list" id="kbViewerTags"></div>
+                <input class="kb-tag-input" id="kbTagInput" placeholder="+ Add tag…" onkeydown="kbAddTag(event)" />
+            </div>
+            <div class="kb-viewer-body" id="kbViewerBody"></div>
+        </div>
+    </div>
+
+    <!-- KB New Note Modal -->
+    <div class="modal-overlay" id="kbNoteOverlay" onclick="e=>e.target===this&&closeKBNote()">
+        <div class="modal" onclick="event.stopPropagation()" style="width:560px">
+            <div class="modal-header">
+                <span class="modal-title">✎ New Note</span>
+                <button class="btn-icon modal-close" onclick="closeKBNote()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input class="form-input" id="kbNoteTitle" placeholder="My note…" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Content</label>
+                    <textarea class="form-input" id="kbNoteContent"
+                        style="height:160px;resize:vertical;font-family:var(--mono);font-size:12px"
+                        placeholder="Write your note here…"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags (comma-separated)</label>
+                    <input class="form-input" id="kbNoteTags" placeholder="sql, reference, notes" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeKBNote()">Cancel</button>
+                <button class="btn btn-run" onclick="kbSaveNote()">Save Note</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KB New Folder Modal -->
+    <div class="modal-overlay" id="kbFolderOverlay" onclick="e=>e.target===this&&closeKBFolder()">
+        <div class="modal" onclick="event.stopPropagation()" style="width:360px">
+            <div class="modal-header">
+                <span class="modal-title">📁 New Folder</span>
+                <button class="btn-icon modal-close" onclick="closeKBFolder()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Folder Name</label>
+                    <input class="form-input" id="kbFolderName" placeholder="My Folder" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeKBFolder()">Cancel</button>
+                <button class="btn btn-run" onclick="kbSaveFolderName()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="ctx-menu" id="ctxMenu">
+        <div class="ctx-item" onclick="ctxAction('run')">▶ Run Query</div>
+        <div class="ctx-item" onclick="ctxAction('copy')">⎘ Copy</div>
+        <div class="ctx-item" onclick="ctxAction('paste')">⌃V Paste</div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="ctxAction('format')">⌥ Format SQL</div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item danger" onclick="ctxAction('clear')">✕ Clear</div>
+    </div>
+
+    <script>
+        // ── STATE ──
+        const state = {
+            connections: [],      // each conn has: { id, name, type, host, port, db, connected, history:[], kbDocs:[], kbFolders:[] }
+            activeConn: null,
+            tabs: [],
+            activeTab: 0,
+            resultData: null,
+            currentPage: 1,
+            pageSize: 100,
+            activeResultTab: 0,
+            selectedDbType: 'PostgreSQL',
+            sortCol: null,
+            sortDir: 'asc',
+            messages: [],
+            sections: { connections: true, schema: true, history: true, docs: true }
+        };
+
+        // ── DB TYPES ──
+        const DB_TYPES = [
+            { name: 'PostgreSQL', icon: '🐘', color: '#336791', port: 5432 },
+            { name: 'MySQL', icon: '🐬', color: '#4479a1', port: 3306 },
+            { name: 'SQLite', icon: '💾', color: '#6fba1c', port: null },
+            { name: 'MS SQL', icon: '🪟', color: '#cc2929', port: 1433 },
+            { name: 'MongoDB', icon: '🍃', color: '#4db33d', port: 27017 },
+            { name: 'Redis', icon: '🔴', color: '#d82c20', port: 6379 },
+            { name: 'Cassandra', icon: '👁', color: '#1287b1', port: 9042 },
+            { name: 'Oracle', icon: '☁', color: '#f80000', port: 1521 },
+        ];
+
+        // ── DEMO DATA ──
+        const DEMO_SCHEMAS = {
+            'PostgreSQL': {
+                databases: ['myapp_db', 'analytics', 'logs'],
+                tables: {
+                    myapp_db: ['users', 'products', 'orders', 'order_items', 'categories', 'sessions'],
+                    analytics: ['events', 'page_views', 'funnels'],
+                    logs: ['access_log', 'error_log']
+                }
+            },
+            'MongoDB': {
+                databases: ['shop', 'metrics'],
+                tables: { shop: ['products', 'customers', 'orders'], metrics: ['daily_stats', 'user_behavior'] }
+            }
+        };
+
+        function getDefaultQuery(dbType) {
+            if (dbType === 'MongoDB') return 'db.products.find({}).limit(10)';
+            if (dbType === 'Redis') return 'KEYS *';
+            return 'SELECT * FROM users\nLIMIT 10;';
+        }
+
+        function generateDemoData(query) {
+            query = query.trim().toLowerCase();
+            if (query.includes('users') || query.includes('user')) {
+                return {
+                    cols: ['id', 'name', 'email', 'role', 'created_at', 'active', 'age'],
+                    rows: Array.from({ length: 24 }, (_, i) => [
+                        i + 1,
+                        ['Alice Johnson', 'Bob Smith', 'Carol White', 'Dave Brown', 'Eva Green', 'Frank Lee', 'Grace Kim', 'Harry Chen'][i % 8],
+                        `user${i + 1}@example.com`,
+                        ['admin', 'user', 'editor', 'viewer'][i % 4],
+                        `2024-0${(i % 9) + 1}-${String((i * 3 % 28) + 1).padStart(2, '0')} 09:30:00`,
+                        i % 5 !== 0 ? 'true' : 'false',
+                        25 + i % 30
+                    ])
+                };
+            }
+            if (query.includes('product') || query.includes('item')) {
+                return {
+                    cols: ['id', 'name', 'sku', 'price', 'stock', 'category_id', 'rating'],
+                    rows: Array.from({ length: 18 }, (_, i) => [
+                        i + 1,
+                        ['Widget Pro', 'Gadget X', 'Device Alpha', 'Tool Beta', 'Gizmo Z', 'Sensor Y', 'Module Q'][i % 7] + ` v${i + 1}`,
+                        `SKU-${String(1000 + i).padStart(4, '0')}`,
+                        (9.99 + i * 7.5).toFixed(2),
+                        Math.floor(Math.random() * 500),
+                        (i % 5) + 1,
+                        (3.5 + (i % 15) * 0.1).toFixed(1)
+                    ])
+                };
+            }
+            if (query.includes('order')) {
+                return {
+                    cols: ['id', 'user_id', 'status', 'total', 'currency', 'created_at'],
+                    rows: Array.from({ length: 15 }, (_, i) => [
+                        1000 + i, (i % 10) + 1,
+                        ['pending', 'shipped', 'delivered', 'cancelled'][i % 4],
+                        (29.99 + i * 15.5).toFixed(2), 'USD',
+                        `2024-${String((i % 12) + 1).padStart(2, '0')}-15 14:22:00`
+                    ])
+                };
+            }
+            // Generic SELECT
+            return {
+                cols: ['id', 'value', 'label', 'type', 'updated_at'],
+                rows: Array.from({ length: 12 }, (_, i) => [i + 1, `val_${i + 1}`, `Label ${i + 1}`, i % 3 === 0 ? 'A' : i % 3 === 1 ? 'B' : 'C', `2024-01-${String(i + 1).padStart(2, '0')}`])
+            };
+        }
+
+        // ── INIT ──
+        function init() {
+            renderDbTypeGrid();
+            addQueryTab();
+            updateLineNumbers();
+            loadDemoConnections();
+            renderConnList();
+        }
+
+        function makeConn(id, name, type, host, port, db) {
+            return {
+                id, name, type, host, port, db, connected: false,
+                history: [],   // per-connection query history
+                kbDocs: [],    // per-connection knowledge base docs
+                kbFolders: [] // per-connection folders
+            };
+        }
+
+        function loadDemoConnections() {
+            const c1 = makeConn(1, 'Local Postgres', 'PostgreSQL', 'localhost', 5432, 'myapp_db');
+            const c2 = makeConn(2, 'Analytics DB', 'MySQL', '10.0.0.5', 3306, 'analytics');
+            const c3 = makeConn(3, 'Mongo Atlas', 'MongoDB', 'cluster0.xyz.mongodb.net', 27017, 'shop');
+
+            // Seed some demo history for each
+            c1.history = [
+                { q: 'SELECT * FROM users LIMIT 10;', time: '09:14:22', rows: 10 },
+                { q: 'SELECT COUNT(*) FROM orders WHERE status = \'delivered\';', time: '09:10:05', rows: 1 },
+            ];
+            c2.history = [
+                { q: 'SELECT * FROM events ORDER BY created_at DESC LIMIT 50;', time: '08:55:33', rows: 50 },
+            ];
+            c3.history = [
+                { q: 'db.products.find({}).limit(10)', time: '10:01:10', rows: 10 },
+            ];
+
+            // Seed some demo KB docs for each connection
+            c1.kbDocs = [
+                {
+                    id: 101, name: 'PostgreSQL Cheatsheet.md', ext: 'md', size: 1240, tags: ['reference', 'sql'],
+                    addedAt: Date.now() - 86400000 * 3,
+                    content: `# PostgreSQL Cheatsheet\n\n## Common Queries\n\n**List all tables:**\n\`\`\`sql\nSELECT table_name FROM information_schema.tables WHERE table_schema = 'public';\n\`\`\`\n\n**Table size:**\n\`\`\`sql\nSELECT pg_size_pretty(pg_total_relation_size('tablename'));\n\`\`\`\n\n## Data Types\n- \`INTEGER\`, \`BIGINT\`, \`SERIAL\`\n- \`VARCHAR(n)\`, \`TEXT\`\n- \`TIMESTAMP\`, \`DATE\`, \`JSONB\``
+                },
+                {
+                    id: 102, name: 'sample_queries.sql', ext: 'sql', size: 620, tags: ['queries', 'examples'],
+                    addedAt: Date.now() - 3600000,
+                    content: `-- Top customers by order value\nSELECT u.name, COUNT(o.id) as orders, SUM(o.total) as ltv\nFROM users u\nJOIN orders o ON o.user_id = u.id\nGROUP BY u.id\nORDER BY ltv DESC\nLIMIT 10;\n\n-- Monthly revenue\nSELECT DATE_TRUNC('month', created_at) as month, SUM(total) as revenue\nFROM orders GROUP BY 1 ORDER BY 1;`
+                },
+                {
+                    id: 103, name: 'db_schema.json', ext: 'json', size: 440, tags: ['schema'],
+                    addedAt: Date.now() - 7200000,
+                    content: JSON.stringify({ tables: { users: ['id', 'name', 'email', 'role'], orders: ['id', 'user_id', 'status', 'total'], products: ['id', 'name', 'sku', 'price', 'stock'] } }, null, 2)
+                },
+            ];
+            c2.kbDocs = [
+                {
+                    id: 201, name: 'Analytics Queries.sql', ext: 'sql', size: 800, tags: ['analytics', 'reports'],
+                    addedAt: Date.now() - 86400000,
+                    content: `-- Daily Active Users\nSELECT DATE(created_at) as day, COUNT(DISTINCT user_id) as dau\nFROM events\nGROUP BY 1 ORDER BY 1 DESC;\n\n-- Funnel conversion\nSELECT step, COUNT(*) as users\nFROM funnels\nGROUP BY step ORDER BY step;`
+                },
+                {
+                    id: 202, name: 'MySQL Tips.md', ext: 'md', size: 500, tags: ['mysql', 'reference'],
+                    addedAt: Date.now() - 43200000,
+                    content: `# MySQL Tips\n\n## Performance\n- Use \`EXPLAIN\` to inspect query plans\n- Add indexes on foreign keys and frequent WHERE columns\n- Use \`LIMIT\` when exploring data\n\n## Useful Commands\n\`\`\`sql\nSHOW PROCESSLIST;\nSHOW TABLE STATUS;\nANALYZE TABLE tablename;\n\`\`\``
+                },
+            ];
+            c3.kbDocs = [
+                {
+                    id: 301, name: 'MongoDB Aggregation.md', ext: 'md', size: 980, tags: ['mongodb', 'aggregation'],
+                    addedAt: Date.now() - 86400000,
+                    content: `# MongoDB Aggregation Pipeline\n\n## Basic Pipeline\n\`\`\`js\ndb.orders.aggregate([\n  { $match: { status: "delivered" } },\n  { $group: { _id: "$user_id", total: { $sum: "$amount" } } },\n  { $sort: { total: -1 } },\n  { $limit: 10 }\n])\n\`\`\`\n\n## Stages\n- \`$match\` — filter\n- \`$group\` — aggregate\n- \`$project\` — reshape\n- \`$lookup\` — join`
+                },
+            ];
+
+            state.connections = [c1, c2, c3];
+        }
+
+        // ── DB TYPE GRID ──
+        function renderDbTypeGrid() {
+            const grid = document.getElementById('dbTypeGrid');
+            grid.innerHTML = DB_TYPES.map(db => `
+    <div class="db-type-btn ${db.name === state.selectedDbType ? 'selected' : ''}" onclick="selectDbType('${db.name}', this)">
+      <div class="db-icon">${db.icon}</div>
+      <div class="db-name">${db.name}</div>
+    </div>`).join('');
+        }
+
+        function selectDbType(name, el) {
+            state.selectedDbType = name;
+            document.querySelectorAll('.db-type-btn').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+            const db = DB_TYPES.find(d => d.name === name);
+            if (db && db.port) document.getElementById('connPort').value = db.port;
+        }
+
+        // ── SECTION COLLAPSE ──
+        function toggleSection(key) {
+            state.sections[key] = !state.sections[key];
+            const body = document.getElementById('body-' + key);
+            const tog = document.getElementById('tog-' + key);
+            if (state.sections[key]) {
+                body.classList.remove('collapsed');
+                tog.classList.remove('collapsed');
+            } else {
+                body.classList.add('collapsed');
+                tog.classList.add('collapsed');
+            }
+        }
+
+        // ── CONNECTION LIST ──
+        function connSubId(connId, part) { return `conn-${connId}-${part}`; }
+
+        function renderConnList() {
+            const list = document.getElementById('connList');
+            const badge = document.getElementById('badge-connections');
+            badge.textContent = state.connections.length;
+            badge.classList.toggle('visible', state.connections.length > 0);
+
+            if (!state.connections.length) {
+                list.innerHTML = '<div style="color:var(--text-2);font-size:11px;text-align:center;padding:16px 10px">No connections yet</div>';
+                return;
+            }
+
+            list.innerHTML = state.connections.map(c => {
+                const db = DB_TYPES.find(d => d.name === c.type) || { icon: '🗄', color: '#888' };
+                const isActive = state.activeConn?.id === c.id;
+                const isOpen = isActive && c.connected;
+                const histCount = (c.history || []).length;
+                const docsCount = (c.kbDocs || []).length;
+                return `
+<div class="conn-entry" id="${connSubId(c.id, 'entry')}">
+  <div class="conn-item ${isActive ? 'active' : ''}" onclick="activateConn(${c.id})" oncontextmenu="showConnCtx(event,${c.id})">
+    <span class="conn-expand-toggle" id="${connSubId(c.id,'tog')}">${isOpen ? '▼' : '▶'}</span>
+    <div class="conn-item-icon" style="background:${db.color}22;color:${db.color}">${db.icon}</div>
+    <div class="conn-item-info">
+      <div class="conn-item-name">${c.name}</div>
+      <div class="conn-item-host">${c.host}${c.port ? ':' + c.port : ''} / ${c.db}</div>
+    </div>
+    <div class="conn-item-dot" style="background:${c.connected ? 'var(--green)' : 'var(--border)'}"></div>
+  </div>
+  <div class="conn-subsections ${isOpen ? 'open' : ''}" id="${connSubId(c.id,'subs')}">
+    <!-- ▸ Schema -->
+    <div class="conn-sub-head" onclick="toggleSubSection(${c.id},'schema')">
+      <span class="conn-sub-toggle" id="${connSubId(c.id,'stog')}">▼</span>
+      <span class="conn-sub-icon">🗂</span>
+      <span class="conn-sub-label">Schema</span>
+    </div>
+    <div class="conn-sub-body" id="${connSubId(c.id,'schema')}">
+      <div id="${connSubId(c.id,'schemaTree')}"></div>
+    </div>
+    <!-- ▸ History -->
+    <div class="conn-sub-head" onclick="toggleSubSection(${c.id},'history')">
+      <span class="conn-sub-toggle" id="${connSubId(c.id,'htog')}">▼</span>
+      <span class="conn-sub-icon">🕐</span>
+      <span class="conn-sub-label">History</span>
+      <span class="conn-sub-badge ${histCount ? 'visible' : ''}" id="${connSubId(c.id,'hbadge')}">${histCount}</span>
+      <button class="conn-sub-action" title="Clear history" onclick="event.stopPropagation();clearConnHistoryById(${c.id})">✕</button>
+    </div>
+    <div class="conn-sub-body" id="${connSubId(c.id,'history')}">
+      <div id="${connSubId(c.id,'histList')}" style="padding:4px 6px"></div>
+    </div>
+    <!-- ▸ Docs -->
+    <div class="conn-sub-head" onclick="toggleSubSection(${c.id},'docs')">
+      <span class="conn-sub-toggle" id="${connSubId(c.id,'dtog')}">▼</span>
+      <span class="conn-sub-icon">📚</span>
+      <span class="conn-sub-label">Docs</span>
+      <span class="conn-sub-badge ${docsCount ? 'visible' : ''}" id="${connSubId(c.id,'dbadge')}">${docsCount}</span>
+      <button class="conn-sub-action" title="New Note" onclick="event.stopPropagation();kbNewNoteFor(${c.id})">✎</button>
+      <button class="conn-sub-action" title="Upload" onclick="event.stopPropagation();triggerKBUpload(${c.id})">⬆</button>
+    </div>
+    <div class="conn-sub-body" id="${connSubId(c.id,'docs')}">
+      <input class="kb-mini-search" id="${connSubId(c.id,'kbSearch')}" placeholder="🔍 Search docs…" oninput="filterKBDocsFor(${c.id})">
+      <div class="kb-mini-drop" id="${connSubId(c.id,'drop')}"
+        onclick="triggerKBUpload(${c.id})"
+        ondragover="kbDragOverFor(event,${c.id})"
+        ondragleave="kbDragLeaveFor(${c.id})"
+        ondrop="kbDropFor(event,${c.id})">📂 Drop files or click to upload
+        <input type="file" id="${connSubId(c.id,'fileInput')}" style="display:none" multiple
+          accept=".pdf,.md,.txt,.sql,.json,.csv,.xml,.yaml,.yml,.log"
+          onchange="kbHandleFilesFor(${c.id},this.files)" />
+      </div>
+      <div id="${connSubId(c.id,'kbTagFilters')}"></div>
+      <div id="${connSubId(c.id,'kbDocList')}"></div>
+    </div>
+  </div>
+</div>`;
+            }).join('');
+
+            // Render content for each open connection
+            state.connections.filter(c => c.connected).forEach(c => {
+                renderSchemaTreeFor(c.id);
+                renderHistoryFor(c.id);
+                renderKBDocsFor(c.id);
+            });
+        }
+
+        function toggleSubSection(connId, part) {
+            const togMap = { schema: 'stog', history: 'htog', docs: 'dtog' };
+            const body = document.getElementById(connSubId(connId, part));
+            const tog = document.getElementById(connSubId(connId, togMap[part]));
+            if (!body) return;
+            const collapsed = body.classList.toggle('collapsed');
+            if (tog) tog.classList.toggle('collapsed', collapsed);
+        }
+
+        function activateConn(id) {
+            const conn = state.connections.find(c => c.id === id);
+            if (!conn) return;
+            // If already active & connected just toggle expand
+            if (state.activeConn?.id === id && conn.connected) {
+                const subs = document.getElementById(connSubId(id, 'subs'));
+                if (subs) subs.classList.toggle('open');
+                const tog = document.getElementById(connSubId(id, 'tog'));
+                if (tog) tog.textContent = subs?.classList.contains('open') ? '▼' : '▶';
+                return;
+            }
+
+            notify('info', `Connecting to ${conn.name}…`);
+            setTimeout(() => {
+                // Disconnect others
+                state.connections.forEach(c => { c.connected = false; });
+                conn.connected = true;
+                state.activeConn = conn;
+
+                renderConnList();
+                updateStatusBar();
+
+                // Set default query
+                const ed = document.getElementById('queryEditor');
+                if (!ed.value.trim()) ed.value = getDefaultQuery(conn.type);
+
+                notify('success', `Connected to ${conn.name}`);
+                addMessage(`Connected to ${conn.name} (${conn.type}) at ${conn.host}`, 'success');
+            }, 500);
+        }
+
+
+        function updateStatusBar() {
+            const connEl = document.getElementById('statusConn');
+            const dbEl = document.getElementById('statusDB');
+            const dot = document.getElementById('connDot');
+            const nameEl = document.getElementById('connName');
+            if (state.activeConn?.connected) {
+                connEl.className = 'status-item ok';
+                connEl.textContent = `● ${state.activeConn.type}`;
+                dbEl.textContent = state.activeConn.db;
+                dot.className = 'dot';
+                nameEl.textContent = state.activeConn.name;
+            } else {
+                connEl.className = 'status-item';
+                connEl.textContent = '○ Not connected';
+                dbEl.textContent = '—';
+                dot.className = 'dot off';
+                nameEl.textContent = 'No Connection';
+            }
+        }
+
+        // ── SCHEMA TREE (per-connection) ──
+        function renderSchemaTreeFor(connId) {
+            const conn = state.connections.find(c => c.id === connId);
+            const el = document.getElementById(connSubId(connId, 'schemaTree'));
+            if (!conn || !el) return;
+            const schema = DEMO_SCHEMAS[conn.type] || DEMO_SCHEMAS['PostgreSQL'];
+            let html = '';
+            schema.databases.forEach(db => {
+                const tables = schema.tables[db] || [];
+                html += `<div class="tree-node">
+      <div class="tree-row" onclick="toggleNode(this)">
+        <div class="tree-toggle">▶</div>
+        <div class="tree-icon">🗄</div>
+        <div class="tree-label">${db}</div>
+      </div>
+      <div class="tree-children" style="display:none">
+        <div class="tree-row" onclick="toggleNode(this)">
+          <div class="tree-toggle">▶</div>
+          <div class="tree-icon">📋</div>
+          <div class="tree-label">Tables</div>
+          <div class="tree-badge">${tables.length}</div>
+        </div>
+        <div class="tree-children" style="display:none">
+          ${tables.map(t => `<div class="tree-row" onclick="insertTableName('${t}', this)">
+            <div class="tree-toggle"></div>
+            <div class="tree-icon">📄</div>
+            <div class="tree-label">${t}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+            });
+            el.innerHTML = html;
+        }
+
+        function toggleNode(row) {
+            const toggle = row.querySelector('.tree-toggle');
+            const children = row.nextElementSibling;
+            if (!children || !children.classList.contains('tree-children')) return;
+            const open = children.style.display !== 'none';
+            children.style.display = open ? 'none' : 'block';
+            toggle.textContent = open ? '▶' : '▼';
+        }
+
+        function insertTableName(name, row) {
+            document.querySelectorAll('.tree-row').forEach(r => r.classList.remove('selected'));
+            row.classList.add('selected');
+            const ed = document.getElementById('queryEditor');
+            const conn = state.activeConn;
+            const q = conn?.type === 'MongoDB' ? `db.${name}.find({}).limit(10)` : `SELECT * FROM ${name}\nLIMIT 100;`;
+            ed.value = q;
+            ed.focus();
+            updateLineNumbers();
+        }
+
+        // ── QUERY TABS ──
+        function addQueryTab() {
+            const id = Date.now();
+            state.tabs.push({ id, name: `Query ${state.tabs.length + 1}`, query: '' });
+            state.activeTab = state.tabs.length - 1;
+            renderTabs();
+            document.getElementById('queryEditor').value = '';
+            updateLineNumbers();
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('queryTabs');
+            container.innerHTML = state.tabs.map((t, i) => `
+    <div class="query-tab ${i === state.activeTab ? 'active' : ''}" onclick="switchTab(${i})">
+      ${t.name}
+      <button class="query-tab-close" onclick="event.stopPropagation();closeTab(${i})">✕</button>
+    </div>`).join('') +
+                `<div class="tab-add" onclick="addQueryTab()" title="New tab">＋</div>`;
+        }
+
+        function switchTab(i) {
+            // Save current query
+            if (state.tabs[state.activeTab]) state.tabs[state.activeTab].query = document.getElementById('queryEditor').value;
+            state.activeTab = i;
+            document.getElementById('queryEditor').value = state.tabs[i].query || '';
+            renderTabs();
+            updateLineNumbers();
+        }
+
+        function closeTab(i) {
+            if (state.tabs.length === 1) { state.tabs[0].query = ''; document.getElementById('queryEditor').value = ''; return; }
+            state.tabs.splice(i, 1);
+            if (state.activeTab >= state.tabs.length) state.activeTab = state.tabs.length - 1;
+            renderTabs();
+            document.getElementById('queryEditor').value = state.tabs[state.activeTab]?.query || '';
+            updateLineNumbers();
+        }
+
+        // ── EDITOR ──
+        const editor = document.getElementById('queryEditor');
+        editor.addEventListener('input', updateLineNumbers);
+        editor.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runQuery(); }
+            if (e.key === 'Tab') { e.preventDefault(); insertAtCursor('  '); }
+        });
+        editor.addEventListener('click', updateCursorPos);
+        editor.addEventListener('keyup', updateCursorPos);
+        editor.addEventListener('contextmenu', e => { e.preventDefault(); showCtxMenu(e); });
+
+        function insertAtCursor(text) {
+            const start = editor.selectionStart, end = editor.selectionEnd;
+            editor.value = editor.value.slice(0, start) + text + editor.value.slice(end);
+            editor.selectionStart = editor.selectionEnd = start + text.length;
+        }
+
+        function updateLineNumbers() {
+            const lines = editor.value.split('\n').length;
+            document.getElementById('lineNumbers').innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join('<br>');
+        }
+
+        function updateCursorPos() {
+            const val = editor.value.substring(0, editor.selectionStart);
+            const lines = val.split('\n');
+            document.getElementById('statusPos').textContent = `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
+        }
+
+        function clearEditor() {
+            editor.value = ''; updateLineNumbers();
+        }
+
+        function formatQuery() {
+            let q = editor.value;
+            // Simple SQL formatter
+            const kw = ['SELECT', 'FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'ORDER BY', 'GROUP BY', 'HAVING', 'LIMIT', 'OFFSET', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE', 'DROP TABLE', 'ALTER TABLE', 'ON', 'AND', 'OR', 'NOT', 'IN', 'BETWEEN', 'LIKE', 'IS NULL', 'IS NOT NULL', 'AS', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MAX', 'MIN'];
+            kw.forEach(k => {
+                const re = new RegExp('\\b' + k + '\\b', 'gi');
+                q = q.replace(re, '\n' + k);
+            });
+            q = q.replace(/,(\s*)/g, ',\n  ').replace(/\n\s*\n/g, '\n').trim();
+            editor.value = q; updateLineNumbers();
+            notify('info', 'Query formatted');
+        }
+
+        // ── RUN QUERY ──
+        function runQuery(selectionOnly = false) {
+            if (!state.activeConn?.connected) {
+                notify('error', 'Not connected. Select a connection first.');
+                return;
+            }
+            let q = selectionOnly
+                ? editor.value.substring(editor.selectionStart, editor.selectionEnd).trim()
+                : editor.value.trim();
+            if (!q) { notify('info', 'Nothing to run'); return; }
+
+            // Add to per-connection history
+            const conn = state.activeConn;
+            conn.history.unshift({ q, time: new Date().toLocaleTimeString(), rows: 0 });
+            if (conn.history.length > 50) conn.history.pop();
+            renderHistory();
+
+            // Show loading
+            document.getElementById('loadingBar').classList.add('active');
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('resultFooter').style.display = 'none';
+
+            const t0 = performance.now();
+            setTimeout(() => {
+                const t1 = performance.now();
+                const ms = (t1 - t0).toFixed(0);
+                document.getElementById('loadingBar').classList.remove('active');
+
+                // Simulate error for certain patterns
+                if (q.toLowerCase().includes('drop') || q.toLowerCase().includes('truncate')) {
+                    showError(`ERROR: Permission denied for destructive operation.\n[${state.activeConn.type}] Simulated security restriction.`);
+                    addMessage(`Error executing: ${q.substring(0, 60)}...`, 'error');
+                    return;
+                }
+
+                const data = generateDemoData(q);
+                state.resultData = data;
+                state.currentPage = 1;
+                state.sortCol = null;
+                document.getElementById('execTime').textContent = ms + 'ms';
+                document.getElementById('rowCount').textContent = data.rows.length;
+                document.getElementById('colCount').textContent = data.cols.length;
+                document.getElementById('resultFooter').style.display = 'flex';
+                addMessage(`Query executed successfully — ${data.rows.length} rows returned in ${ms}ms`, 'success');
+                if (state.activeResultTab === 0) renderTable();
+                else if (state.activeResultTab === 1) renderMessages();
+                else renderJSON();
+                updatePagination();
+            }, 350 + Math.random() * 250);
+        }
+
+        function showError(msg) {
+            const content = document.getElementById('resultContent');
+            content.innerHTML = `<div class="loading-bar"></div><div style="padding:16px;font-family:var(--mono);font-size:12px;color:var(--red);white-space:pre-wrap;line-height:1.7">${msg}</div>`;
+        }
+
+        // ── TABLE RENDER ──
+        function renderTable() {
+            if (!state.resultData) return;
+            const { cols, rows } = state.resultData;
+            const ps = state.pageSize, page = state.currentPage;
+            const start = (page - 1) * ps, end = Math.min(start + ps, rows.length);
+            const pageRows = rows.slice(start, end);
+
+            let sorted = [...pageRows];
+            if (state.sortCol !== null) {
+                sorted.sort((a, b) => {
+                    const av = a[state.sortCol], bv = b[state.sortCol];
+                    return state.sortDir === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+                });
+            }
+
+            const content = document.getElementById('resultContent');
+            content.innerHTML = `<div class="loading-bar"></div>
+    <table class="result-table">
+      <thead><tr>
+        ${cols.map((c, i) => {
+                const sort = state.sortCol === i;
+                return `<th class="${sort ? (state.sortDir === 'asc' ? 'sort-asc' : 'sort-desc') : ''}" onclick="sortByCol(${i})">
+            ${c} <span class="sort-icon">${sort ? (state.sortDir === 'asc' ? '▲' : '▼') : '⇅'}</span>
+          </th>`;
+            }).join('')}
+      </tr></thead>
+      <tbody>
+        ${sorted.map(row => `<tr>${row.map(v => `<td>${cellVal(v)}</td>`).join('')}</tr>`).join('')}
+      </tbody>
+    </table>`;
+        }
+
+        function cellVal(v) {
+            if (v === null || v === undefined || v === '') return '<span class="null-val">NULL</span>';
+            if (v === 'true' || v === 'false') return `<span class="bool-val">${v}</span>`;
+            if (!isNaN(v) && typeof v === 'number') return `<span class="num-val">${v}</span>`;
+            if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) return `<span class="date-val">${v}</span>`;
+            const s = String(v);
+            if (!isNaN(s) && s.trim() !== '') return `<span class="num-val">${s}</span>`;
+            return `<span class="str-val">${s.length > 80 ? s.slice(0, 80) + '…' : s}</span>`;
+        }
+
+        function sortByCol(i) {
+            if (state.sortCol === i) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+            else { state.sortCol = i; state.sortDir = 'asc'; }
+            renderTable();
+        }
+
+        function updatePagination() {
+            if (!state.resultData) return;
+            const total = Math.ceil(state.resultData.rows.length / state.pageSize);
+            document.getElementById('pageInfo').textContent = `${state.currentPage} / ${total}`;
+            document.getElementById('prevPage').disabled = state.currentPage <= 1;
+            document.getElementById('nextPage').disabled = state.currentPage >= total;
+        }
+
+        function changePage(dir) {
+            const total = Math.ceil(state.resultData.rows.length / state.pageSize);
+            state.currentPage = Math.max(1, Math.min(total, state.currentPage + dir));
+            renderTable();
+            updatePagination();
+        }
+
+        // ── JSON VIEW ──
+        function renderJSON() {
+            if (!state.resultData) return;
+            const { cols, rows } = state.resultData;
+            const objs = rows.map(row => Object.fromEntries(cols.map((c, i) => [c, row[i]])));
+            const html = syntaxHighlightJSON(JSON.stringify(objs.slice(0, 20), null, 2));
+            document.getElementById('resultContent').innerHTML = `<div class="loading-bar"></div><div class="json-view">${html}</div>`;
+        }
+
+        function syntaxHighlightJSON(json) {
+            return json
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"([\w\d_]+)":/g, '<span class="json-key">"$1"</span>:')
+                .replace(/: "([^"]*)"/g, ': <span class="json-str">"$1"</span>')
+                .replace(/: (\d+\.?\d*)/g, ': <span class="json-num">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="json-bool">$1</span>')
+                .replace(/: null/g, ': <span class="json-null">null</span>');
+        }
+
+        // ── MESSAGES ──
+        function addMessage(text, type = 'info') {
+            state.messages.push({ text, type, time: new Date().toLocaleTimeString() });
+            if (state.activeResultTab === 1) renderMessages();
+        }
+
+        function renderMessages() {
+            const content = document.getElementById('resultContent');
+            content.innerHTML = `<div class="loading-bar"></div><div class="messages-panel">
+    ${state.messages.slice().reverse().map(m =>
+                `<div class="msg-line"><span class="msg-time">${m.time}</span><span class="msg-text ${m.type}">${m.text}</span></div>`
+            ).join('')}
+  </div>`;
+        }
+
+        // ── RESULT TABS ──
+        function switchResultTab(i, el) {
+            state.activeResultTab = i;
+            document.querySelectorAll('.results-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            if (!state.resultData && i !== 1) return;
+            if (i === 0) renderTable();
+            else if (i === 1) renderMessages();
+            else renderJSON();
+        }
+
+        // ── HISTORY (per-connection) ──
+        function renderHistoryFor(connId) {
+            const conn = state.connections.find(c => c.id === connId);
+            const el = document.getElementById(connSubId(connId, 'histList'));
+            const badge = document.getElementById(connSubId(connId, 'hbadge'));
+            if (!conn || !el) return;
+            const hist = conn.history || [];
+            if (badge) {
+                badge.textContent = hist.length;
+                badge.classList.toggle('visible', hist.length > 0);
+            }
+            if (!hist.length) {
+                el.innerHTML = '<div style="color:var(--text-2);font-size:11px;padding:8px 6px">No queries yet</div>';
+                return;
+            }
+            el.innerHTML = hist.map((h, i) => `
+    <div class="hist-item" onclick="loadHistoryFor(${connId},${i})" title="${h.q.replace(/"/g,'&quot;')}">
+      <div class="hist-meta">${h.time}${h.rows ? ' · ' + h.rows + ' rows' : ''}</div>
+      <div class="hist-query">${h.q.replace(/\n/g, ' ').substring(0, 120)}</div>
+    </div>`).join('');
+        }
+
+        // Legacy renderHistory wrapper kept for runQuery
+        function renderHistory() {
+            if (state.activeConn) renderHistoryFor(state.activeConn.id);
+        }
+
+        function loadHistoryFor(connId, i) {
+            const conn = state.connections.find(c => c.id === connId);
+            if (!conn) return;
+            editor.value = conn.history[i].q;
+            updateLineNumbers();
+        }
+
+        function clearConnHistoryById(connId) {
+            const conn = state.connections.find(c => c.id === connId);
+            if (!conn) return;
+            conn.history = [];
+            renderHistoryFor(connId);
+            notify('info', 'History cleared');
+        }
+
+        function clearConnHistory() {
+            if (state.activeConn) clearConnHistoryById(state.activeConn.id);
+        }
+
+
+        // ── SIDEBAR (section toggle handled by toggleSection) ──
+
+        // ── MODAL ──
+        function openModal() {
+            document.getElementById('modalOverlay').classList.add('open');
+            renderDbTypeGrid();
+        }
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+        document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+        function testConnection() {
+            notify('info', 'Testing connection...');
+            setTimeout(() => notify('success', 'Connection successful!'), 800);
+        }
+
+        function saveConnection() {
+            const name = document.getElementById('connNameInput').value.trim() || state.selectedDbType + ' Connection';
+            const host = document.getElementById('connHost').value.trim() || 'localhost';
+            const port = parseInt(document.getElementById('connPort').value) || DB_TYPES.find(d => d.name === state.selectedDbType)?.port || 0;
+            const db = document.getElementById('connDB').value.trim() || 'mydb';
+            const id = Date.now();
+            state.connections.push(makeConn(id, name, state.selectedDbType, host, port, db));
+            renderConnList();
+            closeModal();
+            notify('success', `Connection "${name}" saved`);
+            activateConn(id);
+            ['connNameInput', 'connHost', 'connPort', 'connUser', 'connPass', 'connDB', 'connStr'].forEach(k => document.getElementById(k).value = '');
+        }
+
+        // ── EXPORT ──
+        function exportCSV() {
+            if (!state.resultData) { notify('info', 'No data to export'); return; }
+            const { cols, rows } = state.resultData;
+            const csv = [cols.join(','), ...rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))].join('\n');
+            const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            a.download = 'query_result.csv'; a.click();
+            notify('success', 'Exported to CSV');
+        }
+
+        // ── DRAG RESIZE (Editor / Results) ──
+        let dragging = false, startY = 0, startH = 0;
+        const divider = document.getElementById('dragDivider');
+        const editorWrap = document.getElementById('editorWrap');
+        divider.addEventListener('mousedown', e => {
+            dragging = true; startY = e.clientY; startH = editorWrap.offsetHeight;
+            divider.classList.add('dragging'); document.body.style.cursor = 'row-resize';
+            document.body.style.userSelect = 'none';
+        });
+        document.addEventListener('mousemove', e => {
+            if (!dragging) return;
+            const newH = Math.max(60, Math.min(startH + (e.clientY - startY), window.innerHeight - 200));
+            editorWrap.style.height = newH + 'px';
+        });
+        document.addEventListener('mouseup', () => {
+            if (!dragging) return; dragging = false;
+            divider.classList.remove('dragging'); document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        });
+
+        // ── SIDEBAR RESIZE ──
+        const sideResize = document.getElementById('sidebarResize');
+        const sidebar = document.getElementById('sidebar');
+        let sdDrag = false, sdStartX = 0, sdStartW = 0;
+        sideResize.addEventListener('mousedown', e => {
+            sdDrag = true; sdStartX = e.clientX; sdStartW = sidebar.offsetWidth;
+            document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
+        });
+        document.addEventListener('mousemove', e => {
+            if (!sdDrag) return;
+            sidebar.style.width = Math.max(180, Math.min(400, sdStartW + (e.clientX - sdStartX))) + 'px';
+        });
+        document.addEventListener('mouseup', () => { if (!sdDrag) return; sdDrag = false; document.body.style.cursor = ''; document.body.style.userSelect = ''; });
+
+        // ── CONTEXT MENU ──
+        const ctxMenu = document.getElementById('ctxMenu');
+        function showCtxMenu(e) {
+            ctxMenu.style.left = e.clientX + 'px'; ctxMenu.style.top = e.clientY + 'px';
+            ctxMenu.classList.add('open');
+        }
+        function showConnCtx(e, id) {
+            e.preventDefault(); showCtxMenu(e);
+            ctxMenu.dataset.connId = id;
+        }
+        document.addEventListener('click', () => ctxMenu.classList.remove('open'));
+        function ctxAction(action) {
+            if (action === 'run') runQuery();
+            else if (action === 'format') formatQuery();
+            else if (action === 'clear') clearEditor();
+            else if (action === 'copy') document.execCommand('copy');
+            ctxMenu.classList.remove('open');
+        }
+
+        // ── NOTIFICATIONS ──
+        function notify(type, msg) {
+            const el = document.createElement('div');
+            el.className = `notif notif-${type}`;
+            el.innerHTML = `${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'} ${msg}`;
+            document.getElementById('notifications').appendChild(el);
+            setTimeout(() => el.style.opacity = '0', 2500);
+            setTimeout(() => el.remove(), 2800);
+        }
+
+        // ── LIMIT CHANGE ──
+        document.getElementById('limitSelect').addEventListener('change', function () {
+            state.pageSize = this.value === 'All' ? 999999 : parseInt(this.value);
+            if (state.resultData) { renderTable(); updatePagination(); }
+        });
+
+        // ── KEYBOARD SHORTCUTS ──
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); addQueryTab(); }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); exportCSV(); }
+        });
+
+        // ── KNOWLEDGE BASE (per-connection) ──
+        const kb = {
+            activeDocId: null,
+            filterTags: {},   // connId -> active tag
+            searchQs: {}      // connId -> search string
+        };
+
+        const FILE_ICONS = {
+            pdf: '📕', md: '📝', txt: '📄', sql: '🗃', json: '{ }',
+            csv: '📊', xml: '🏷', yaml: '⚙', yml: '⚙', log: '📋', note: '✎'
+        };
+        const FILE_COLORS = {
+            pdf: '#f87171', md: '#60a5fa', txt: '#a8b3cc', sql: '#fbbf24',
+            json: '#34d399', csv: '#c084fc', xml: '#fb923c', yaml: '#22d3ee', yml: '#22d3ee', log: '#6b7899', note: '#f9a8d4'
+        };
+
+        function connDocs(connId) {
+            const id = connId ?? state.activeConn?.id;
+            return state.connections.find(c => c.id === id)?.kbDocs || [];
+        }
+        function kbGetIcon(ext) { return FILE_ICONS[ext] || '📄'; }
+        function kbGetColor(ext) { return FILE_COLORS[ext] || '#a8b3cc'; }
+        function kbFmtSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+        function kbFmtDate(ts) {
+            const d = new Date(ts);
+            return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Upload triggers (per-connection)
+        function triggerKBUpload(connId) { document.getElementById(connSubId(connId, 'fileInput'))?.click(); }
+        function kbDragOverFor(e, connId) { e.preventDefault(); document.getElementById(connSubId(connId,'drop'))?.classList.add('drag-over'); }
+        function kbDragLeaveFor(connId) { document.getElementById(connSubId(connId,'drop'))?.classList.remove('drag-over'); }
+        function kbDropFor(e, connId) { e.preventDefault(); kbDragLeaveFor(connId); kbHandleFilesFor(connId, e.dataTransfer.files); }
+
+        // Legacy drag wrappers (no-op if no active conn)
+        function kbDragOver(e) { if (state.activeConn) kbDragOverFor(e, state.activeConn.id); }
+        function kbDragLeave() { if (state.activeConn) kbDragLeaveFor(state.activeConn.id); }
+        function kbDrop(e) { if (state.activeConn) kbDropFor(e, state.activeConn.id); }
+
+        function kbHandleFilesFor(connId, files) {
+            const conn = state.connections.find(c => c.id === connId);
+            if (!conn) { notify('error', 'Connect to a database first'); return; }
+            Array.from(files).forEach(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    conn.kbDocs.push({
+                        id: Date.now() + Math.random(), name: file.name, ext,
+                        size: file.size, content: ev.target.result, tags: [], addedAt: Date.now()
+                    });
+                    renderKBDocsFor(connId);
+                    notify('success', `"${file.name}" added to ${conn.name}`);
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function kbHandleFiles(files) { if (state.activeConn) kbHandleFilesFor(state.activeConn.id, files); }
+
+        // New Note (per-connection)
+        let kbNoteTargetConnId = null;
+        function kbNewNoteFor(connId) {
+            const conn = state.connections.find(c => c.id === connId);
+            if (!conn) { notify('error', 'Connect to a database first'); return; }
+            kbNoteTargetConnId = connId;
+            document.getElementById('kbNoteOverlay').classList.add('open');
+            setTimeout(() => document.getElementById('kbNoteTitle').focus(), 50);
+        }
+        function kbNewNote() { if (state.activeConn) kbNewNoteFor(state.activeConn.id); }
+        function closeKBNote() { document.getElementById('kbNoteOverlay').classList.remove('open'); kbNoteTargetConnId = null; }
+        function kbSaveNote() {
+            const connId = kbNoteTargetConnId ?? state.activeConn?.id;
+            const conn = state.connections.find(c => c.id === connId);
+            if (!conn) return;
+            const title = document.getElementById('kbNoteTitle').value.trim() || 'Untitled Note';
+            const content = document.getElementById('kbNoteContent').value;
+            const tags = document.getElementById('kbNoteTags').value.split(',').map(t => t.trim()).filter(Boolean);
+            conn.kbDocs.push({ id: Date.now(), name: title + '.note', ext: 'note', size: content.length, content, tags, addedAt: Date.now() });
+            renderKBDocsFor(connId);
+            ['kbNoteTitle', 'kbNoteContent', 'kbNoteTags'].forEach(id => document.getElementById(id).value = '');
+            closeKBNote();
+            notify('success', `Note "${title}" saved to ${conn.name}`);
+        }
+
+        // Search / Filter per-connection
+        function filterKBDocsFor(connId) {
+            kb.searchQs[connId] = document.getElementById(connSubId(connId,'kbSearch'))?.value.toLowerCase() || '';
+            renderKBDocsFor(connId);
+        }
+        function filterKBDocs() { if (state.activeConn) filterKBDocsFor(state.activeConn.id); }
+
+        function setKBFilterTagFor(connId, tag) {
+            kb.filterTags[connId] = kb.filterTags[connId] === tag ? null : tag;
+            renderKBDocsFor(connId);
+        }
+        function setKBFilterTag(tag) { if (state.activeConn) setKBFilterTagFor(state.activeConn.id, tag); }
+
+        function kbFilteredDocsFor(connId) {
+            const q = kb.searchQs[connId] || '';
+            const activeTag = kb.filterTags[connId];
+            return connDocs(connId).filter(d => {
+                const matchSearch = !q || d.name.toLowerCase().includes(q) || (d.content||'').toLowerCase().includes(q) || d.tags.some(t => t.includes(q));
+                const matchTag = !activeTag || d.tags.includes(activeTag);
+                return matchSearch && matchTag;
+            });
+        }
+        function allKBTagsFor(connId) {
+            const set = new Set();
+            connDocs(connId).forEach(d => d.tags.forEach(t => set.add(t)));
+            return [...set];
+        }
+
+        // Render doc list for a connection
+        function renderKBDocsFor(connId) {
+            const el = document.getElementById(connSubId(connId,'kbDocList'));
+            const badge = document.getElementById(connSubId(connId,'dbadge'));
+            const tf = document.getElementById(connSubId(connId,'kbTagFilters'));
+            if (!el) return;
+            const docs = connDocs(connId);
+            if (badge) {
+                badge.textContent = docs.length;
+                badge.classList.toggle('visible', docs.length > 0);
+            }
+            const activeTag = kb.filterTags[connId];
+            const tags = allKBTagsFor(connId);
+            if (tf) tf.innerHTML = tags.length
+                ? `<div class="kb-filter-row">${tags.map(t => `<span class="kb-filter-tag${activeTag===t?' active':''}" onclick="setKBFilterTagFor(${connId},'${t}')">${t}</span>`).join('')}</div>`
+                : '';
+            const filtered = kbFilteredDocsFor(connId);
+            if (!docs.length) {
+                el.innerHTML = `<div class="kb-empty"><div class="kb-empty-icon">📚</div>No docs. Upload or create a note.</div>`;
+                return;
+            }
+            if (!filtered.length) {
+                el.innerHTML = `<div style="color:var(--text-2);font-size:11px;padding:8px 6px">No matches</div>`;
+                return;
+            }
+            el.innerHTML = filtered.map(d => kbDocItemHTML(d, connId)).join('');
+        }
+
+        // Legacy wrapper
+        function renderKBDocs() { if (state.activeConn) renderKBDocsFor(state.activeConn.id); }
+
+        function kbDocItemHTML(d, connId) {
+            const icon = kbGetIcon(d.ext);
+            const color = kbGetColor(d.ext);
+            const cid = connId ?? state.activeConn?.id;
+            return `<div class="kb-doc-item ${kb.activeDocId === d.id ? 'active' : ''}" onclick="openKBDoc(${d.id},${cid})">
+    <div class="kb-doc-icon" style="color:${color}">${icon}</div>
+    <div class="kb-doc-info">
+      <div class="kb-doc-name" title="${d.name}">${d.name}</div>
+      <div class="kb-doc-meta"><span>${kbFmtSize(d.size)}</span><span>${kbFmtDate(d.addedAt)}</span></div>
+      ${d.tags.length ? `<div class="kb-doc-tags">${d.tags.map(t => `<span class="kb-tag">${t}</span>`).join('')}</div>` : ''}
+    </div>
+    <div class="kb-doc-actions">
+      <button class="kb-icon-btn" title="Delete" onclick="event.stopPropagation();deleteKBDoc(${d.id},${cid})" style="color:var(--red);font-size:11px">✕</button>
+    </div>
+  </div>`;
+        }
+
+        function deleteKBDoc(id, connId) {
+            const conn = state.connections.find(c => c.id === connId);
+            if (!conn) return;
+            conn.kbDocs = conn.kbDocs.filter(d => d.id !== id);
+            if (kb.activeDocId === id) { kb.activeDocId = null; closeKBViewer(); }
+            renderKBDocsFor(connId);
+            notify('info', 'Document removed');
+        }
+
+        // Viewer — track which connId the doc belongs to
+        let kbViewerConnId = null;
+        function openKBDoc(id, connId) {
+            const doc = connDocs(connId).find(d => d.id === id);
+            if (!doc) return;
+            kb.activeDocId = id;
+            kbViewerConnId = connId;
+            renderKBDocsFor(connId);
+            const conn = state.connections.find(c => c.id === connId);
+            document.getElementById('kbViewerIcon').textContent = kbGetIcon(doc.ext);
+            document.getElementById('kbViewerTitle').textContent = doc.name;
+            document.getElementById('kbViewerMeta').textContent = `${doc.ext.toUpperCase()} · ${kbFmtSize(doc.size)} · ${conn?.name} · ${kbFmtDate(doc.addedAt)}`;
+            renderKBViewerTags(doc);
+            const body = document.getElementById('kbViewerBody');
+            if (doc.ext === 'md' || doc.ext === 'note') {
+                body.className = 'kb-viewer-body markdown';
+                body.innerHTML = simpleMarkdown(doc.content);
+            } else if (doc.ext === 'json') {
+                body.className = 'kb-viewer-body';
+                try { body.innerHTML = syntaxHighlightJSON(JSON.stringify(JSON.parse(doc.content), null, 2)); }
+                catch { body.textContent = doc.content; }
+            } else {
+                body.className = 'kb-viewer-body';
+                body.textContent = doc.content;
+            }
+            document.getElementById('kbViewerOverlay').classList.add('open');
+        }
+
+        function renderKBViewerTags(doc) {
+            document.getElementById('kbViewerTags').innerHTML =
+                doc.tags.map((t, i) => `<span class="kb-tag-pill">${t}<span class="kb-tag-pill-del" onclick="removeKBTag(${doc.id},${i})">✕</span></span>`).join('');
+        }
+        function kbAddTag(e) {
+            if (e.key !== 'Enter') return;
+            const input = document.getElementById('kbTagInput');
+            const tag = input.value.trim().toLowerCase();
+            if (!tag) return;
+            const doc = connDocs(kbViewerConnId).find(d => d.id === kb.activeDocId);
+            if (doc && !doc.tags.includes(tag)) { doc.tags.push(tag); renderKBViewerTags(doc); renderKBDocsFor(kbViewerConnId); }
+            input.value = '';
+        }
+        function removeKBTag(docId, idx) {
+            const doc = connDocs(kbViewerConnId).find(d => d.id === docId);
+            if (doc) { doc.tags.splice(idx, 1); renderKBViewerTags(doc); renderKBDocsFor(kbViewerConnId); }
+        }
+        function closeKBViewer() {
+            document.getElementById('kbViewerOverlay').classList.remove('open');
+            const cid = kbViewerConnId;
+            kb.activeDocId = null; kbViewerConnId = null;
+            if (cid) renderKBDocsFor(cid);
+        }
+        function kbDownloadDoc() {
+            const doc = connDocs(kbViewerConnId).find(d => d.id === kb.activeDocId);
+            if (!doc) return;
+            const a = document.createElement('a');
+            a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(doc.content);
+            a.download = doc.name; a.click();
+            notify('success', `Downloaded "${doc.name}"`);
+        }
+        function kbInsertToEditor() {
+            const doc = connDocs(kbViewerConnId).find(d => d.id === kb.activeDocId);
+            if (!doc) return;
+            const cur = editor.value;
+            editor.value = (cur ? cur + '\n\n-- [KB: ' + doc.name + ']\n' : '') + doc.content;
+            updateLineNumbers(); closeKBViewer();
+            notify('success', `Inserted "${doc.name}" into editor`);
+        }
+
+        function kbFmtSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+        function kbFmtDate(ts) {
+            const d = new Date(ts);
+            return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+
+
+
+        function simpleMarkdown(md) {
+            return md
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>').replace(/^## (.+)$/gm, '<h2>$1</h2>').replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+                .replace(/^\- (.+)$/gm, '<li>$1</li>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                .replace(/\n/g, '<br>');
+        }
+
+
+
+        init();
+        addMessage('DB Studio ready. Connect to a database to get started.', 'info');
+    </script>
+</body>
+
+</html>
